@@ -3,9 +3,9 @@
 Pinqloq is a structured logging and log shipping SDK for centralized application logs. It
 captures HTTP request/response logs through standard `net/http` middleware and sends manual
 application events to the Pinqloq log management platform using in-memory buffering, batching,
-and HTTPS delivery. This is the Go counterpart of the [.NET](../ClientLogs.Client),
-[Node.js](../pinqloq-node), and [Ruby](../pinqloq-ruby) `pinqloq` SDKs — same platform, same wire
-protocol, idiomatic API on each side.
+and HTTPS delivery. This is the Go counterpart of the [.NET](https://www.nuget.org/packages/pinqloq),
+[Node.js](https://www.npmjs.com/package/pinqloq), and [Ruby](https://rubygems.org/gems/pinqloq)
+`pinqloq` SDKs — same platform, same wire protocol, idiomatic API on each side.
 
 Because the middleware is plain `func(http.Handler) http.Handler`, it works with any router built
 on `net/http.Handler` — chi, gorilla/mux, `http.ServeMux`, or a framework's own `http.Handler`
@@ -175,8 +175,9 @@ buffer is ever sent to Pinqloq.
 
 ## Documentation
 
-- [.NET SDK](../ClientLogs.Client), [Node.js SDK](../pinqloq-node), [Ruby SDK](../pinqloq-ruby) —
-  the other implementations of this platform's wire protocol and feature set.
+- [.NET SDK](https://www.nuget.org/packages/pinqloq), [Node.js SDK](https://www.npmjs.com/package/pinqloq),
+  [Ruby SDK](https://rubygems.org/gems/pinqloq) — the other implementations of this platform's
+  wire protocol and feature set.
 - [Full documentation](https://pinqloq.pinqponq.io/documentation.html)
 
 ## License
