@@ -28,7 +28,7 @@ adapter (e.g. Gin's `gin.WrapH`).
 ## Installation
 
 ```bash
-go get github.com/pinqponq/pinqloq-backend/sdk/pinqloq-go
+go get github.com/pinqponq/pinqloq-go-sdk
 ```
 
 ## Quick Start
@@ -44,7 +44,7 @@ import (
 	"net/http"
 	"os"
 
-	pinqloq "github.com/pinqponq/pinqloq-backend/sdk/pinqloq-go"
+	pinqloq "github.com/pinqponq/pinqloq-go-sdk"
 )
 
 func main() {
