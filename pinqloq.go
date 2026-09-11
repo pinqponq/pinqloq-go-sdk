@@ -31,6 +31,16 @@ func (c *Client) Logger() Logger {
 	return c.logger
 }
 
+// Enqueue is a shortcut for Logger().Enqueue.
+func (c *Client) Enqueue(entry LogEntry, onSent OnSent, onFailed OnFailed) (bool, error) {
+	return c.logger.Enqueue(entry, onSent, onFailed)
+}
+
+// EnqueueMany is a shortcut for Logger().EnqueueMany.
+func (c *Client) EnqueueMany(entries []LogEntry, onSent OnSent, onFailed OnFailed) (int, error) {
+	return c.logger.EnqueueMany(entries, onSent, onFailed)
+}
+
 // Shutdown stops the background dispatcher and sends whatever is left in the queue, waiting up
 // to ctx's deadline for delivery to finish.
 func (c *Client) Shutdown(ctx context.Context) error {
