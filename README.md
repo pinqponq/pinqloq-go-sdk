@@ -75,10 +75,10 @@ request body, response body, request headers, and response headers go to the log
 
 ## Manual Logging
 
-Use `client.Logger()` to send structured application events:
+Call `Enqueue` directly on the client to send structured application events:
 
 ```go
-client.Logger().Enqueue(pinqloq.LogEntry{
+client.Enqueue(pinqloq.LogEntry{
 	Event:            "order.created",
 	DeviceIdentifier: order.CustomerID,
 	LogLevel:         pinqloq.LogLevelInformation,
@@ -86,6 +86,10 @@ client.Logger().Enqueue(pinqloq.LogEntry{
 	Metadata:         map[string]string{"orderId": order.ID},
 }, nil, nil)
 ```
+
+`client.Logger()` still returns the same `Logger` interface — useful when you want to pass just
+the logging capability into a function or struct without handing it the whole client (middleware,
+shutdown, and all).
 
 `Event` and `DeviceIdentifier` are required on every entry. Leave `DeviceIdentifier` unset on an
 entry to inherit the global `Options.DeviceIdentifier`. `Enqueue` returns an error if an entry has
@@ -125,7 +129,7 @@ The request-logging middleware fills it with no configuration: the caller's `Cor
 request header when present, otherwise a generated UUID.
 
 ```go
-client.Logger().Enqueue(pinqloq.LogEntry{
+client.Enqueue(pinqloq.LogEntry{
 	Event:            "order.created",
 	DeviceIdentifier: order.CustomerID,
 	CorrelationID:    currentCorrelationID,

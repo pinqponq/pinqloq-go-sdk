@@ -5,6 +5,15 @@ All notable changes to the `pinqloq` Go module are documented here. This module 
 NuGet package, the npm package, and the RubyGems gem — all four ship on separate cadences for
 the same platform, and mirror each other's feature set rather than their version numbers.
 
+## 1.1.0 — 2026-09-11
+
+**Added:**
+
+- `Client.Enqueue` / `Client.EnqueueMany` — shortcuts for `Client.Logger().Enqueue` /
+  `Client.Logger().EnqueueMany`, so manual logging no longer needs the extra `.Logger()` call.
+  `Client.Logger()` is unchanged and still useful when a function or struct should only receive
+  the logging capability, not the whole client.
+
 ## 1.0.0 — 2026-09-08
 
 **Added:**
