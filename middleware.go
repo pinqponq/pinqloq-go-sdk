@@ -36,7 +36,7 @@ const selectorWarningThrottle = 60 * time.Second
 // EnricherFunc computes a metadata/detail value from the request and the completed response.
 type EnricherFunc func(r *http.Request, statusCode int, responseHeaders http.Header) string
 
-// RequestLoggingOptions configures Client.Middleware.
+// RequestLoggingOptions configures Client.RequestLogging.
 type RequestLoggingOptions struct {
 	ExcludePaths            []string
 	ResolveDeviceIdentifier func(r *http.Request) string
@@ -47,10 +47,10 @@ type RequestLoggingOptions struct {
 	RedactPaths             []string
 }
 
-// Middleware returns standard net/http middleware that captures every HTTP request, produces one
-// API log, and enqueues it via the client's Logger. Compatible with any router built on
+// RequestLogging returns standard net/http middleware that captures every HTTP request, produces
+// one API log, and enqueues it via the client's Logger. Compatible with any router built on
 // net/http.Handler (chi, gorilla/mux, ServeMux, ...).
-func (c *Client) Middleware(opts RequestLoggingOptions) func(http.Handler) http.Handler {
+func (c *Client) RequestLogging(opts RequestLoggingOptions) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if matchesAnyPathPrefix(r.URL.Path, opts.ExcludePaths) {

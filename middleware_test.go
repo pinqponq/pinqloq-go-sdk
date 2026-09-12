@@ -44,9 +44,9 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(map[string]string{"token": "abc123", "userId": "64"})
 }
 
-func TestMiddlewareRejectsWithoutDeviceIdentifier(t *testing.T) {
+func TestRequestLoggingRejectsWithoutDeviceIdentifier(t *testing.T) {
 	client, logger := buildTestClient(Options{SecretKey: "sk_test"})
-	handler := client.Middleware(RequestLoggingOptions{})(http.HandlerFunc(loginHandler))
+	handler := client.RequestLogging(RequestLoggingOptions{})(http.HandlerFunc(loginHandler))
 
 	req := httptest.NewRequest(http.MethodPost, "/users/login", strings.NewReader(`{"password":"hunter2"}`))
 	rec := httptest.NewRecorder()
@@ -60,9 +60,9 @@ func TestMiddlewareRejectsWithoutDeviceIdentifier(t *testing.T) {
 	}
 }
 
-func TestMiddlewareCapturesMetadataAndRedactsBuiltInFloor(t *testing.T) {
+func TestRequestLoggingCapturesMetadataAndRedactsBuiltInFloor(t *testing.T) {
 	client, logger := buildTestClient(Options{SecretKey: "sk_test"})
-	handler := client.Middleware(RequestLoggingOptions{})(http.HandlerFunc(loginHandler))
+	handler := client.RequestLogging(RequestLoggingOptions{})(http.HandlerFunc(loginHandler))
 
 	req := httptest.NewRequest(http.MethodPost, "/users/login", strings.NewReader(`{"email":"a@b.com","password":"hunter2"}`))
 	req.Header.Set("Device-Identifier", "device-1")
@@ -109,9 +109,9 @@ func TestMiddlewareCapturesMetadataAndRedactsBuiltInFloor(t *testing.T) {
 	}
 }
 
-func TestMiddlewareSkipsExcludedPaths(t *testing.T) {
+func TestRequestLoggingSkipsExcludedPaths(t *testing.T) {
 	client, logger := buildTestClient(Options{SecretKey: "sk_test", DeviceIdentifier: "fallback"})
-	handler := client.Middleware(RequestLoggingOptions{ExcludePaths: []string{"/health"}})(
+	handler := client.RequestLogging(RequestLoggingOptions{ExcludePaths: []string{"/health"}})(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) }),
 	)
 
@@ -124,9 +124,9 @@ func TestMiddlewareSkipsExcludedPaths(t *testing.T) {
 	}
 }
 
-func TestMiddlewareUsesGlobalDeviceIdentifierFallback(t *testing.T) {
+func TestRequestLoggingUsesGlobalDeviceIdentifierFallback(t *testing.T) {
 	client, logger := buildTestClient(Options{SecretKey: "sk_test", DeviceIdentifier: "fallback-device"})
-	handler := client.Middleware(RequestLoggingOptions{})(
+	handler := client.RequestLogging(RequestLoggingOptions{})(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusInternalServerError) }),
 	)
 
@@ -145,9 +145,9 @@ func TestMiddlewareUsesGlobalDeviceIdentifierFallback(t *testing.T) {
 	}
 }
 
-func TestMiddlewareRedactPathsMasksWholeBody(t *testing.T) {
+func TestRequestLoggingRedactPathsMasksWholeBody(t *testing.T) {
 	client, logger := buildTestClient(Options{SecretKey: "sk_test", DeviceIdentifier: "d1"})
-	handler := client.Middleware(RequestLoggingOptions{RedactPaths: []string{"/users"}})(http.HandlerFunc(loginHandler))
+	handler := client.RequestLogging(RequestLoggingOptions{RedactPaths: []string{"/users"}})(http.HandlerFunc(loginHandler))
 
 	req := httptest.NewRequest(http.MethodPost, "/users/login", strings.NewReader(`{"email":"a@b.com","password":"hunter2"}`))
 	rec := httptest.NewRecorder()
@@ -160,9 +160,9 @@ func TestMiddlewareRedactPathsMasksWholeBody(t *testing.T) {
 	}
 }
 
-func TestMiddlewareMetadataEventEnricherOverridesEntryEvent(t *testing.T) {
+func TestRequestLoggingMetadataEventEnricherOverridesEntryEvent(t *testing.T) {
 	client, logger := buildTestClient(Options{SecretKey: "sk_test", DeviceIdentifier: "d1"})
-	handler := client.Middleware(RequestLoggingOptions{
+	handler := client.RequestLogging(RequestLoggingOptions{
 		Metadata: map[string]EnricherFunc{
 			"event": func(r *http.Request, statusCode int, headers http.Header) string { return "custom.event.name" },
 		},
@@ -180,11 +180,11 @@ func TestMiddlewareMetadataEventEnricherOverridesEntryEvent(t *testing.T) {
 	}
 }
 
-func TestMiddlewareDownstreamStillReceivesFullBody(t *testing.T) {
+func TestRequestLoggingDownstreamStillReceivesFullBody(t *testing.T) {
 	client, _ := buildTestClient(Options{SecretKey: "sk_test", DeviceIdentifier: "d1"})
 
 	var receivedBody string
-	handler := client.Middleware(RequestLoggingOptions{})(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	handler := client.RequestLogging(RequestLoggingOptions{})(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		body := make([]byte, 0)
 		buf := make([]byte, 1024)
 		for {
