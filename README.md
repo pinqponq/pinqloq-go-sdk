@@ -48,7 +48,7 @@ import (
 )
 
 func main() {
-	client, err := pinqloq.New(pinqloq.Options{
+	pinqloqClient, err := pinqloq.New(pinqloq.Options{
 		SecretKey:             os.Getenv("PINQLOQ_SECRET_KEY"),
 		APILogsCollectionName: "myapp_api_logs",
 		DeviceIdentifier:      "myapp-instance-1",
@@ -56,12 +56,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer client.Shutdown(context.Background())
+	defer pinqloqClient.Shutdown(context.Background())
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/orders", ordersHandler)
 
-	middleware := client.RequestLogging(pinqloq.RequestLoggingOptions{
+	middleware := pinqloqClient.RequestLogging(pinqloq.RequestLoggingOptions{
 		ExcludePaths: []string{"/health"},
 	})
 
@@ -78,7 +78,7 @@ request body, response body, request headers, and response headers go to the log
 Call `Enqueue` directly on the client to send structured application events:
 
 ```go
-client.Enqueue(pinqloq.LogEntry{
+pinqloqClient.Enqueue(pinqloq.LogEntry{
 	Event:            "order.created",
 	DeviceIdentifier: order.CustomerID,
 	LogLevel:         pinqloq.LogLevelInformation,
@@ -87,7 +87,7 @@ client.Enqueue(pinqloq.LogEntry{
 }, nil, nil)
 ```
 
-`client.Logger()` still returns the same `Logger` interface — useful when you want to pass just
+`pinqloqClient.Logger()` still returns the same `Logger` interface — useful when you want to pass just
 the logging capability into a function or struct without handing it the whole client (middleware,
 shutdown, and all).
 
@@ -105,7 +105,7 @@ override wins, and if it returns an empty string the middleware falls back to th
 resolve a value, the middleware rejects the request with **HTTP 400** before it runs.
 
 ```go
-middleware := client.RequestLogging(pinqloq.RequestLoggingOptions{
+middleware := pinqloqClient.RequestLogging(pinqloq.RequestLoggingOptions{
 	ExcludePaths: []string{"/health"},
 	ResolveDeviceIdentifier: func(r *http.Request) string {
 		return r.Header.Get("X-User-Id")
@@ -129,7 +129,7 @@ The request-logging middleware fills it with no configuration: the caller's `Cor
 request header when present, otherwise a generated UUID.
 
 ```go
-client.Enqueue(pinqloq.LogEntry{
+pinqloqClient.Enqueue(pinqloq.LogEntry{
 	Event:            "order.created",
 	DeviceIdentifier: order.CustomerID,
 	CorrelationID:    currentCorrelationID,
@@ -150,7 +150,7 @@ like the Node.js and Ruby SDKs:
   structure and header names intact.
 
 ```go
-middleware := client.RequestLogging(pinqloq.RequestLoggingOptions{
+middleware := pinqloqClient.RequestLogging(pinqloq.RequestLoggingOptions{
 	RedactFields: []string{"ssnLastFour"},
 	RedactPaths:  []string{"/payment"},
 })
@@ -165,7 +165,7 @@ request-logging middleware that wants the same redaction behavior.
 ## Security and Reliability
 
 Logs are buffered in memory and sent in batches by a single background goroutine. Buffered logs
-may be lost if the process is terminated without a graceful shutdown — call `client.Shutdown(ctx)`
+may be lost if the process is terminated without a graceful shutdown — call `pinqloqClient.Shutdown(ctx)`
 on exit, passing a context with a deadline generous enough for the final flush.
 
 Delivery failures are reported through `onFailed` callbacks and, even without callbacks, as
