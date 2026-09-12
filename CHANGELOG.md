@@ -13,6 +13,8 @@ the same platform, and mirror each other's feature set rather than their version
   Same signature and behavior — only the name changed, to match the concept's name in the .NET
   (`UsePinqloqRequestLogging`), Node.js (`client.requestLogging`), and Ruby
   (`Pinqloq::Rack::RequestLogging`) SDKs.
+- Module path is now `github.com/pinqponq/pinqloq-go-sdk/v2`, per Go's semantic import
+  versioning rules for a v2+ module. Update both the `go get` target and the import path.
 
 ## 1.1.0 — 2026-09-11
 
