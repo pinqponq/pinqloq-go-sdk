@@ -61,7 +61,7 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/orders", ordersHandler)
 
-	middleware := client.Middleware(pinqloq.RequestLoggingOptions{
+	middleware := client.RequestLogging(pinqloq.RequestLoggingOptions{
 		ExcludePaths: []string{"/health"},
 	})
 
@@ -105,7 +105,7 @@ override wins, and if it returns an empty string the middleware falls back to th
 resolve a value, the middleware rejects the request with **HTTP 400** before it runs.
 
 ```go
-middleware := client.Middleware(pinqloq.RequestLoggingOptions{
+middleware := client.RequestLogging(pinqloq.RequestLoggingOptions{
 	ExcludePaths: []string{"/health"},
 	ResolveDeviceIdentifier: func(r *http.Request) string {
 		return r.Header.Get("X-User-Id")
@@ -150,7 +150,7 @@ like the Node.js and Ruby SDKs:
   structure and header names intact.
 
 ```go
-middleware := client.Middleware(pinqloq.RequestLoggingOptions{
+middleware := client.RequestLogging(pinqloq.RequestLoggingOptions{
 	RedactFields: []string{"ssnLastFour"},
 	RedactPaths:  []string{"/payment"},
 })

@@ -5,6 +5,15 @@ All notable changes to the `pinqloq` Go module are documented here. This module 
 NuGet package, the npm package, and the RubyGems gem — all four ship on separate cadences for
 the same platform, and mirror each other's feature set rather than their version numbers.
 
+## 2.0.0 — 2026-09-12
+
+**Changed (breaking):**
+
+- `Client.Middleware(RequestLoggingOptions)` renamed to `Client.RequestLogging(RequestLoggingOptions)`.
+  Same signature and behavior — only the name changed, to match the concept's name in the .NET
+  (`UsePinqloqRequestLogging`), Node.js (`client.requestLogging`), and Ruby
+  (`Pinqloq::Rack::RequestLogging`) SDKs.
+
 ## 1.1.0 — 2026-09-11
 
 **Added:**
