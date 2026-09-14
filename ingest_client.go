@@ -25,7 +25,7 @@ type wireLogItem struct {
 	Event            string            `json:"event"`
 	Date             string            `json:"date,omitempty"`
 	AppVersionName   string            `json:"appVersionName,omitempty"`
-	DeviceIdentifier string            `json:"deviceIdentifier"`
+	DeviceIdentifier string            `json:"deviceIdentifier,omitempty"`
 	LogSourceType    string            `json:"logSourceType"`
 	CorrelationID    string            `json:"correlationId,omitempty"`
 	Path             string            `json:"path,omitempty"`

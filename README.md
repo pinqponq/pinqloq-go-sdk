@@ -91,18 +91,18 @@ pinqloqClient.Enqueue(pinqloq.LogEntry{
 the logging capability into a function or struct without handing it the whole client (middleware,
 shutdown, and all).
 
-`Event` and `DeviceIdentifier` are required on every entry. Leave `DeviceIdentifier` unset on an
-entry to inherit the global `Options.DeviceIdentifier`. `Enqueue` returns an error if an entry has
-no `DeviceIdentifier` and no global fallback is set — a missing required field fails loudly rather
-than being silently dropped.
+`Event` is required on every entry.
+
+`DeviceIdentifier` is optional. Leave it unset on an entry to inherit the global
+`Options.DeviceIdentifier`. If neither is set, the log is stored without one.
 
 ## Add Request Metadata
 
-By default the middleware reads the required `DeviceIdentifier` from the `Device-Identifier`
-request header automatically. Override how it is resolved with `ResolveDeviceIdentifier`; the
-override wins, and if it returns an empty string the middleware falls back to the
-`Device-Identifier` header, then to the global `Options.DeviceIdentifier`. If none of these
-resolve a value, the middleware rejects the request with **HTTP 400** before it runs.
+By default the middleware reads the optional `DeviceIdentifier` from the `Device-Identifier`
+request header. Override how it is resolved with `ResolveDeviceIdentifier`. The override wins. If
+it returns an empty string, the middleware falls back to the `Device-Identifier` header, then to
+the global `Options.DeviceIdentifier`. If none of these resolve a value, the log is stored without
+a `DeviceIdentifier`.
 
 ```go
 middleware := pinqloqClient.RequestLogging(pinqloq.RequestLoggingOptions{

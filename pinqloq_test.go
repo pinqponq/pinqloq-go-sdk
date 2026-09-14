@@ -16,7 +16,7 @@ func newTestClient(t *testing.T, sender batchSender) *Client {
 
 	buffer := newLogBuffer(resolved.QueueCapacity)
 	dispatcher := newLogDispatcher(buffer, sender, resolved)
-	logger := &defaultLogger{buffer: buffer, dispatcher: dispatcher, options: resolved}
+	logger := &defaultLogger{buffer: buffer, dispatcher: dispatcher}
 	dispatcher.start()
 
 	return &Client{logger: logger, dispatcher: dispatcher, options: resolved}

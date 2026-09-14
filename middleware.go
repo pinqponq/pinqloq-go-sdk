@@ -23,9 +23,6 @@ const (
 	correlationIDHeaderName    = "Correlation-Id"
 )
 
-const deviceIdentifierRequiredMessage = "pinqloq: the required DeviceIdentifier could not be resolved. Send the " +
-	"'Device-Identifier' request header, or configure ResolveDeviceIdentifier, or set Options.DeviceIdentifier."
-
 const (
 	serverErrorStatusThreshold = 500
 	clientErrorStatusThreshold = 400
@@ -59,10 +56,6 @@ func (c *Client) RequestLogging(opts RequestLoggingOptions) func(http.Handler) h
 			}
 
 			deviceIdentifier := resolveDeviceIdentifier(r, opts, c.options)
-			if strings.TrimSpace(deviceIdentifier) == "" {
-				http.Error(w, deviceIdentifierRequiredMessage, http.StatusBadRequest)
-				return
-			}
 
 			redactPlan := buildRedactPlan(r.URL.Path, opts)
 			startedAt := time.Now()

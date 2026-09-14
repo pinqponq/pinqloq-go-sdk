@@ -44,7 +44,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 	_ = json.NewEncoder(w).Encode(map[string]string{"token": "abc123", "userId": "64"})
 }
 
-func TestRequestLoggingRejectsWithoutDeviceIdentifier(t *testing.T) {
+func TestRequestLoggingLogsWithoutDeviceIdentifier(t *testing.T) {
 	client, logger := buildTestClient(Options{SecretKey: "sk_test"})
 	handler := client.RequestLogging(RequestLoggingOptions{})(http.HandlerFunc(loginHandler))
 
@@ -52,11 +52,14 @@ func TestRequestLoggingRejectsWithoutDeviceIdentifier(t *testing.T) {
 	rec := httptest.NewRecorder()
 	handler.ServeHTTP(rec, req)
 
-	if rec.Code != http.StatusBadRequest {
-		t.Fatalf("expected 400, got %d", rec.Code)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", rec.Code)
 	}
-	if len(logger.entries) != 0 {
-		t.Fatalf("expected no captured entries, got %d", len(logger.entries))
+	if len(logger.entries) != 1 {
+		t.Fatalf("expected 1 captured entry, got %d", len(logger.entries))
+	}
+	if logger.entries[0].DeviceIdentifier != "" {
+		t.Fatalf("expected empty device identifier, got %q", logger.entries[0].DeviceIdentifier)
 	}
 }
 

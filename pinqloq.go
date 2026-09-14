@@ -19,7 +19,7 @@ func New(opts Options) (*Client, error) {
 	buffer := newLogBuffer(resolved.QueueCapacity)
 	apiClient := newIngestAPIClient(resolved)
 	dispatcher := newLogDispatcher(buffer, apiClient, resolved)
-	logger := &defaultLogger{buffer: buffer, dispatcher: dispatcher, options: resolved}
+	logger := &defaultLogger{buffer: buffer, dispatcher: dispatcher}
 
 	dispatcher.start()
 

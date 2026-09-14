@@ -73,6 +73,34 @@ func TestIngestClientPostsWirePayload(t *testing.T) {
 	}
 }
 
+func TestIngestClientOmitsBlankDeviceIdentifier(t *testing.T) {
+	var capturedBody map[string]any
+	var mu sync.Mutex
+
+	client, _ := withTestServer(t, func(w http.ResponseWriter, r *http.Request) {
+		mu.Lock()
+		defer mu.Unlock()
+		_ = json.NewDecoder(r.Body).Decode(&capturedBody)
+		w.WriteHeader(http.StatusOK)
+	})
+
+	item := newTestQueuedLog("order.created", "", nil, nil)
+	item.entry.DeviceIdentifier = ""
+
+	client.sendBatch(context.Background(), []queuedLog{item})
+
+	mu.Lock()
+	defer mu.Unlock()
+	logs, ok := capturedBody["logs"].([]any)
+	if !ok || len(logs) != 1 {
+		t.Fatalf("expected 1 log, got %v", capturedBody["logs"])
+	}
+	logItem := logs[0].(map[string]any)
+	if value, present := logItem["deviceIdentifier"]; present {
+		t.Fatalf("expected deviceIdentifier to be omitted, got %v", value)
+	}
+}
+
 func TestIngestClientGroupsByCollectionName(t *testing.T) {
 	var mu sync.Mutex
 	var requestCount int
