@@ -5,6 +5,19 @@ All notable changes to the `pinqloq` Go module are documented here. This module 
 NuGet package, the npm package, and the RubyGems gem — all four ship on separate cadences for
 the same platform, and mirror each other's feature set rather than their version numbers.
 
+## 2.0.2 — 2026-09-18
+
+**Changed (breaking):**
+
+- `Options.DeviceIdentifier` removed ([pinqponq/pinqloq-dashboard#57](https://github.com/pinqponq/pinqloq-dashboard/issues/57)).
+  The global fallback is gone: `DeviceIdentifier` is set per entry on a manual `Enqueue`, and per
+  request by `ResolveDeviceIdentifier` then the `Device-Identifier` header. Remove the field from
+  your `pinqloq.Options{...}` literal — the compiler reports it as an unknown field.
+- The middleware's resolution order is now `ResolveDeviceIdentifier`, then the `Device-Identifier`
+  header, and nothing after that. A request that resolves neither is still logged, without a
+  `DeviceIdentifier`. Set `ResolveDeviceIdentifier` if you relied on the global option to guarantee
+  a value.
+
 ## 2.0.1 — 2026-09-14
 
 **Changed:**

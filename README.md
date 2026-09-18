@@ -51,7 +51,6 @@ func main() {
 	pinqloqClient, err := pinqloq.New(pinqloq.Options{
 		SecretKey:             os.Getenv("PINQLOQ_SECRET_KEY"),
 		APILogsCollectionName: "myapp_api_logs",
-		DeviceIdentifier:      "myapp-instance-1",
 	})
 	if err != nil {
 		panic(err)
@@ -93,16 +92,15 @@ shutdown, and all).
 
 `Event` is required on every entry.
 
-`DeviceIdentifier` is optional. Leave it unset on an entry to inherit the global
-`Options.DeviceIdentifier`. If neither is set, the log is stored without one.
+`DeviceIdentifier` is optional and has no global fallback: set it per entry, and an entry that
+leaves it unset is stored without one.
 
 ## Add Request Metadata
 
 By default the middleware reads the optional `DeviceIdentifier` from the `Device-Identifier`
-request header. Override how it is resolved with `ResolveDeviceIdentifier`. The override wins. If
-it returns an empty string, the middleware falls back to the `Device-Identifier` header, then to
-the global `Options.DeviceIdentifier`. If none of these resolve a value, the log is stored without
-a `DeviceIdentifier`.
+request header. Override how it is resolved with `ResolveDeviceIdentifier`. The override wins; if
+it returns an empty string, the middleware falls back to the `Device-Identifier` header. If
+neither resolves a value, the log is stored without a `DeviceIdentifier`.
 
 ```go
 middleware := pinqloqClient.RequestLogging(pinqloq.RequestLoggingOptions{

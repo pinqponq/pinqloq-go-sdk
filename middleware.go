@@ -55,7 +55,7 @@ func (c *Client) RequestLogging(opts RequestLoggingOptions) func(http.Handler) h
 				return
 			}
 
-			deviceIdentifier := resolveDeviceIdentifier(r, opts, c.options)
+			deviceIdentifier := resolveDeviceIdentifier(r, opts)
 
 			redactPlan := buildRedactPlan(r.URL.Path, opts)
 			startedAt := time.Now()
@@ -127,14 +127,11 @@ func resolveLogLevel(statusCode int) LogLevel {
 	return LogLevelInformation
 }
 
-func resolveDeviceIdentifier(r *http.Request, opts RequestLoggingOptions, globalOptions Options) string {
+func resolveDeviceIdentifier(r *http.Request, opts RequestLoggingOptions) string {
 	if overridden := resolveSelector(opts.ResolveDeviceIdentifier, r, "ResolveDeviceIdentifier"); overridden != "" {
 		return overridden
 	}
-	if header := strings.TrimSpace(r.Header.Get(deviceIdentifierHeaderName)); header != "" {
-		return header
-	}
-	return globalOptions.DeviceIdentifier
+	return strings.TrimSpace(r.Header.Get(deviceIdentifierHeaderName))
 }
 
 func resolveCorrelationID(r *http.Request) string {
