@@ -113,7 +113,7 @@ func TestRequestLoggingCapturesMetadataAndRedactsBuiltInFloor(t *testing.T) {
 }
 
 func TestRequestLoggingSkipsExcludedPaths(t *testing.T) {
-	client, logger := buildTestClient(Options{SecretKey: "sk_test", DeviceIdentifier: "fallback"})
+	client, logger := buildTestClient(Options{SecretKey: "sk_test"})
 	handler := client.RequestLogging(RequestLoggingOptions{ExcludePaths: []string{"/health"}})(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) }),
 	)
@@ -127,21 +127,24 @@ func TestRequestLoggingSkipsExcludedPaths(t *testing.T) {
 	}
 }
 
-func TestRequestLoggingUsesGlobalDeviceIdentifierFallback(t *testing.T) {
-	client, logger := buildTestClient(Options{SecretKey: "sk_test", DeviceIdentifier: "fallback-device"})
-	handler := client.RequestLogging(RequestLoggingOptions{})(
+func TestRequestLoggingResolveDeviceIdentifierOverridesTheHeader(t *testing.T) {
+	client, logger := buildTestClient(Options{SecretKey: "sk_test"})
+	handler := client.RequestLogging(RequestLoggingOptions{
+		ResolveDeviceIdentifier: func(r *http.Request) string { return "device-from-selector" },
+	})(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusInternalServerError) }),
 	)
 
 	req := httptest.NewRequest(http.MethodGet, "/boom", nil)
+	req.Header.Set("Device-Identifier", "device-from-header")
 	rec := httptest.NewRecorder()
 	handler.ServeHTTP(rec, req)
 
 	if len(logger.entries) != 1 {
 		t.Fatalf("expected 1 entry, got %d", len(logger.entries))
 	}
-	if logger.entries[0].DeviceIdentifier != "fallback-device" {
-		t.Fatalf("expected fallback device identifier, got %s", logger.entries[0].DeviceIdentifier)
+	if logger.entries[0].DeviceIdentifier != "device-from-selector" {
+		t.Fatalf("expected the selector to win, got %s", logger.entries[0].DeviceIdentifier)
 	}
 	if logger.entries[0].LogLevel != LogLevelError {
 		t.Fatalf("expected Error log level for 500, got %d", logger.entries[0].LogLevel)
@@ -149,7 +152,7 @@ func TestRequestLoggingUsesGlobalDeviceIdentifierFallback(t *testing.T) {
 }
 
 func TestRequestLoggingRedactPathsMasksWholeBody(t *testing.T) {
-	client, logger := buildTestClient(Options{SecretKey: "sk_test", DeviceIdentifier: "d1"})
+	client, logger := buildTestClient(Options{SecretKey: "sk_test"})
 	handler := client.RequestLogging(RequestLoggingOptions{RedactPaths: []string{"/users"}})(http.HandlerFunc(loginHandler))
 
 	req := httptest.NewRequest(http.MethodPost, "/users/login", strings.NewReader(`{"email":"a@b.com","password":"hunter2"}`))
@@ -164,7 +167,7 @@ func TestRequestLoggingRedactPathsMasksWholeBody(t *testing.T) {
 }
 
 func TestRequestLoggingMetadataEventEnricherOverridesEntryEvent(t *testing.T) {
-	client, logger := buildTestClient(Options{SecretKey: "sk_test", DeviceIdentifier: "d1"})
+	client, logger := buildTestClient(Options{SecretKey: "sk_test"})
 	handler := client.RequestLogging(RequestLoggingOptions{
 		Metadata: map[string]EnricherFunc{
 			"event": func(r *http.Request, statusCode int, headers http.Header) string { return "custom.event.name" },
@@ -184,7 +187,7 @@ func TestRequestLoggingMetadataEventEnricherOverridesEntryEvent(t *testing.T) {
 }
 
 func TestRequestLoggingDownstreamStillReceivesFullBody(t *testing.T) {
-	client, _ := buildTestClient(Options{SecretKey: "sk_test", DeviceIdentifier: "d1"})
+	client, _ := buildTestClient(Options{SecretKey: "sk_test"})
 
 	var receivedBody string
 	handler := client.RequestLogging(RequestLoggingOptions{})(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

@@ -224,10 +224,7 @@ func (c *ingestAPIClient) toWireItem(entry LogEntry) wireLogItem {
 		appVersionName = c.options.AppVersionName
 	}
 
-	deviceIdentifier := entry.DeviceIdentifier
-	if strings.TrimSpace(deviceIdentifier) == "" {
-		deviceIdentifier = c.options.DeviceIdentifier
-	}
+	deviceIdentifier := strings.TrimSpace(entry.DeviceIdentifier)
 
 	var date string
 	if !entry.Date.IsZero() {

@@ -9,7 +9,7 @@ import (
 func newTestClient(t *testing.T, sender batchSender) *Client {
 	t.Helper()
 
-	resolved, err := resolveOptions(Options{SecretKey: "sk_test", DeviceIdentifier: "d1"})
+	resolved, err := resolveOptions(Options{SecretKey: "sk_test"})
 	if err != nil {
 		t.Fatalf("resolveOptions failed: %v", err)
 	}

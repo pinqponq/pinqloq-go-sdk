@@ -25,7 +25,6 @@ type Options struct {
 	QueueCapacity         int
 	HTTPTimeout           time.Duration
 	AppVersionName        string
-	DeviceIdentifier      string
 }
 
 func resolveOptions(opts Options) (Options, error) {

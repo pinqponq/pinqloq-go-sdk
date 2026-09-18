@@ -5,21 +5,26 @@ All notable changes to the `pinqloq` Go module are documented here. This module 
 NuGet package, the npm package, and the RubyGems gem — all four ship on separate cadences for
 the same platform, and mirror each other's feature set rather than their version numbers.
 
-## 2.0.1 — 2026-09-14
+## 2.0.1 — 2026-09-18
 
 **Changed:**
 
 - `DeviceIdentifier` is now optional.
   - The request-logging middleware no longer rejects a request with HTTP 400 when no
     `DeviceIdentifier` resolves. The log is sent without one.
-  - `Enqueue` / `EnqueueMany` no longer return an error when an entry has no `DeviceIdentifier`
-    and no global fallback is set.
+  - `Enqueue` / `EnqueueMany` no longer return an error when an entry has no `DeviceIdentifier`.
   - A blank `DeviceIdentifier` is now omitted from the wire payload instead of being sent as an
     empty string. The ingest API accepts logs without one and stores `null`.
-- The resolution order is unchanged: `ResolveDeviceIdentifier`, then the `Device-Identifier`
-  header, then `Options.DeviceIdentifier`.
 
-No consumer action needed. Code that sets `DeviceIdentifier` keeps working as before.
+**Changed (breaking):**
+
+- `Options.DeviceIdentifier` removed ([pinqponq/pinqloq-dashboard#57](https://github.com/pinqponq/pinqloq-dashboard/issues/57)).
+  With the field optional, a global fallback for it had nothing left to guarantee.
+  `DeviceIdentifier` is now set per entry on a manual `Enqueue`, and resolved per request by
+  `ResolveDeviceIdentifier` then the `Device-Identifier` header — nothing after that. A request
+  that resolves neither is still logged, without a `DeviceIdentifier`. Remove the field from your
+  `pinqloq.Options{...}` literal; the compiler reports it as an unknown field. If you relied on it
+  to guarantee a value, set `ResolveDeviceIdentifier` instead.
 
 ## 2.0.0 — 2026-09-12
 
