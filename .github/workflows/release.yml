@@ -29,6 +29,7 @@ jobs:
 
       - name: Warm the module proxy and checksum database
         run: |
+          MODULE_PATH=$(go list -m)
           mkdir -p /tmp/warm-proxy && cd /tmp/warm-proxy
           go mod init warm-proxy
-          GOPROXY=https://proxy.golang.org GOFLAGS=-mod=mod go get "github.com/pinqponq/pinqloq-go-sdk@${GITHUB_REF_NAME}"
+          GOPROXY=https://proxy.golang.org GOFLAGS=-mod=mod go get "${MODULE_PATH}@${GITHUB_REF_NAME}"
