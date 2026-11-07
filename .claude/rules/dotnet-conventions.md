@@ -77,6 +77,10 @@ if (Interlocked.Exchange(ref _isDisposed, 1) == 1)
 if (IsDisposeAlreadyStarted())
 ```
 
+- Code that waits (retry or reconnect delays, timeouts, scheduled work) takes a `TimeProvider` (`TryAddSingleton(TimeProvider.System)` at startup) and calls `Task.Delay(delay, timeProvider, token)`. Tests fire the wait themselves and never wait on real time, so the result does not depend on how fast the CI runner is.
+- A test that signals a waiting test with a `TaskCompletionSource` creates it with `TaskCreationOptions.RunContinuationsAsynchronously`; otherwise the test's next step runs inside the code under test, in the middle of its work.
+- A loop that stops on cancellation only lets `OperationCanceledException` through when its token is cancelled: `catch (Exception exception) when (exception is not OperationCanceledException || !stoppingToken.IsCancellationRequested)`. Filtering on the token alone lets a real failure that arrives during shutdown fault the hosted service.
+
 ---
 
 ## Guard Clauses
@@ -108,6 +112,14 @@ return new Response { HasNextPage = hasNextPage };
 
 ---
 
+## Client Address and Request Limits
+
+- A limit or log that uses the client's IP address reads `X-Forwarded-For` only when the request comes from an address listed in a trusted-proxy setting, because any client can send that header. Then the client is the right-most address in the header that is not a trusted proxy. Otherwise the client is the connection's remote address.
+- Validate the trusted-proxy list at startup: an entry that is not an IP address stops the start instead of being skipped.
+- A request without a known address is not counted under a shared placeholder such as `"unknown"`, because every such request would then share one limit.
+
+---
+
 ## Error Handling
 
 - Never pass only `ex.Message` — always pass the original exception to preserve the stack trace.
@@ -129,16 +141,18 @@ PostgresErrorCodes.ForeignKeyViolation
 
 ## Shared Packages (pinqnuqets)
 
-`pinqnuqets` holds only code that every Pinqponq ASP.NET Core API needs in the same form. A product-specific thing never goes into it.
+`pinqnuqets` holds only code that every Pinqponq ASP.NET Core API needs. A product-specific thing never goes into it. Whether code may move in at all is decided by "When code moves into a shared library" in `common.md`. The points below add what that means for a .NET package.
 
-- Test for every type, option, default, constant and message: would a product other than the one this code came from need exactly this? If the answer depends on one product, it stays in that product.
+- Test for every type, option, default, constant and message: would a product other than the one this code came from need this, as it is or with the new parameters that `common.md` allows? If the answer depends on one product, it stays in that product.
 - Product-specific means: a header, query key, route, response code, message or default taken from one product's client or contract; an option that exists for one product only; a feature that only products with one kind of client (for example a mobile app) need.
 - If you are not sure a part is shared, leave it in the product. You may instead move it into its own opt-in package as a setting with a neutral default, which means a default that was not copied from the first product. The setting is off by default.
 - Technology-specific code (PostgreSQL, MongoDB, EF Core, Vault) is fine in its own opt-in package, as long as nothing in it names a product.
 - When moving code out of a product into `pinqnuqets`, remove the product-specific parts first and leave them in the product. The product then keeps them as its own code on top of the package.
 - A pull request that adds or changes a `pinqnuqets` package lists, for each package, what the package kept, what was left in the product, and why.
 - Reviewers: a product-specific constant or default in a `pinqnuqets` change is a blocker.
+- `pinqnuqets` packages are published to nuget.org. A shared .NET package that is not part of `pinqnuqets` is published to the company Nexus instead; how, and how a project downloads it: `.pinq-doq/references/packages/nexus.md`.
 - A package that targets several frameworks is tested on every one of them before the pull request: install the runtime of each `TargetFrameworks` entry and run `dotnet test` without `-f`. A green run on the newest runtime says nothing about the oldest one; for example, a `DispatchProxy` test double over a large SDK interface fails only on .NET 8.
+- A package may compile against the lowest major of a dependency that ships one major per runtime (EF Core, ASP.NET Core) only when the tests prove it works on the higher majors. The test project of each target framework runs on the dependency major that an application on that framework uses, not on the major the package was built against. A newer major can change the types of a public method: a package built against EF Core 8 throws `TypeLoadException` from `ExecuteUpdateAsync` at run time in an application on EF Core 10. When that run fails, build that target framework against its own major (`VersionOverride` per target framework).
 
 ---
 
