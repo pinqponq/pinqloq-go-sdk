@@ -5,3 +5,8 @@ Shared standards come from **pinq-doq**, vendored under `.pinq-doq/` and copied 
 `.claude/rules/common.md` is language-agnostic and applies here; the Kotlin/.NET-specific rule files do not apply to this Go module.
 
 To pull newer standards later, tell Claude: **update rules**.
+
+pinq-doq is managed by the pinqdoq CLI here: `.pinq-doq/`, `.claude/rules/` and the `pinq_*` skills are
+ignored local copies. If `.claude/rules/common.md` is missing, stop and set up the CLI
+(https://github.com/pinqponq/pinqdoq, `tasks/migrate-to-cli.md`) before writing code. Never add the
+submodule back and never edit the copies.
